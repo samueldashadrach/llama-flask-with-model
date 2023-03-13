@@ -23,6 +23,10 @@ gen_global = load(
     max_batch_size = 32
 )
 
+@app.route("/")
+def hello():
+	print("flask server is running", flush=True)
+
 @app.route("/flask-inference/", methods = ["POST"])
 def flask_inference_no_batching():
 
