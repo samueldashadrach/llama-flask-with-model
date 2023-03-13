@@ -93,15 +93,11 @@ while True:
             f_prompt.close()
             os.remove("prompt")
 
-            result = gen_global.generate(
-                prompt, max_gen_len=256, temperature=0.8, top_p=0.95
+            prompts = [prompt]
+            results = gen_global.generate(
+                prompts, max_gen_len=256, temperature=0.8, top_p=0.95
             )
-
-            # debugging
-            print(prompt, flush = True)
-            print(result, flush = True)
-            x = input()
-
+            result = results[0]
 
             # write to "result" file
             tempname = "".join(random.choices(string.ascii_uppercase, k=20))
