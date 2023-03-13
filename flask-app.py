@@ -15,8 +15,8 @@ local_rank, world_size = setup_model_parallel()
 if local_rank > 0:
     sys.stdout = open(os.devnull, "w")
 gen_global = load(
-    ckpt_dir = "~/llama-all/weights/7B",
-    tokenizer_path = "~/llama-all/weights/tokenizer.model",
+    ckpt_dir = "../weights/7B",
+    tokenizer_path = "../weights/tokenizer.model",
     local_rank = local_rank,
     world_size = world_size,
     max_seq_len = 512,
