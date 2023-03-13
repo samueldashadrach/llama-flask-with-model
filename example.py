@@ -16,6 +16,11 @@ from fairscale.nn.model_parallel.initialize import initialize_model_parallel
 from llama import ModelArgs, Transformer, Tokenizer, LLaMA
 
 
+#imports beyond facebook repo
+import random
+import os
+
+
 def setup_model_parallel() -> Tuple[int, int]:
     local_rank = int(os.environ.get("LOCAL_RANK", -1))
     world_size = int(os.environ.get("WORLD_SIZE", -1))
@@ -62,4 +67,47 @@ def load(
     print(f"Loaded in {time.time() - start_time:.2f} seconds")
     return generator
 
-#### all other code deleted, please see Facebook repo if you want the code
+# following code runs when example.py starts
+
+local_rank, world_size = setup_model_parallel()
+if local_rank > 0:
+    sys.stdout = open(os.devnull, "w")
+gen_global = load(
+    ckpt_dir = "../weights/7B",
+    tokenizer_path = "../weights/tokenizer.model",
+    local_rank = local_rank,
+    world_size = world_size,
+    max_seq_len = 512,
+    max_batch_size = 32
+)
+
+# infinite loop
+while True:
+
+    # do I need to add a waiting period here?? This program runs using torchrun and is hence parallelised
+
+    try:
+        with open("prompt", "r") as f_prompt:
+            # wait for "prompt" file to be created, then read and destroy "prompt" file
+            prompt = f_prompt.read()
+            f_prompt.close()
+            os.remove("prompt")
+
+            result = gen_global.generate(
+                prompt, max_gen_len=256, temperature=0.8, top_p=0.95
+            )
+
+            # write to "result" file
+            tempname = "".join(random.choices(string.ascii_uppercase, k=20))
+            try:
+                with open(tempname, "w") as f_result_temp:
+                    f_result_temp.write(result)
+                    f_result_temp.close()
+                    os.rename(tempname, "result")
+
+            except IOError:
+                print("Result could not be written!!!!")
+    except IOError:
+        pass
+
+    

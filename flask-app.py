@@ -1,27 +1,8 @@
-# run this flask app using torchrun --nproc_per_node MP flask-app.py
-
 import flask
 import string
-import subprocess
-from example import setup_model_parallel, load
-
 
 app = flask.Flask(__name__)
 
-
-# this runs when app starts
-
-local_rank, world_size = setup_model_parallel()
-if local_rank > 0:
-    sys.stdout = open(os.devnull, "w")
-gen_global = load(
-    ckpt_dir = "../weights/7B",
-    tokenizer_path = "../weights/tokenizer.model",
-    local_rank = local_rank,
-    world_size = world_size,
-    max_seq_len = 512,
-    max_batch_size = 32
-)
 
 @app.route("/")
 def hello():
@@ -33,16 +14,35 @@ def flask_inference_no_batching():
 
 	print("received POST request", flush=True)
 
-	global gen_global
-
 	req_data = flask.request.json
-	print("request data", req_data, flush=True)
+	print("request data", req_data, flush=True) # for testing
 
+	apikey, prompt = req_data["apikey"], req_data["prompt"]
 	print(req_data["apikey"], req_data["prompt"], flush = True) # for testing
 
-	result = gen_global.generate(
-        prompt, max_gen_len=256, temperature=0.8, top_p=0.95
-    )
+	# write to file named "prompt"
+	tempname = "".join(random.choices(string.ascii_uppercase, k=20))
+	try:
+		with open(tempname, "w") as f_prompt_temp:
+			f_prompt_temp.write(prompt)
+			f_prompt_temp.close()
+			os.rename(tempname, "prompt")
+
+	except IOError:
+		print("prompt could not be written!!!")
+
+	# wait for file named "result" to be created, then read and destroy "result" file
+	result_found = False
+	while not result_found:
+		try:
+			with open("result", "r") as f_result:
+				result = f_result.read()
+				f_result.close()
+				os.remove("result")
+				result_found = True
+		except IOError:
+			pass
+
 	print("result from model: ", result)
 
 	res_data = {
