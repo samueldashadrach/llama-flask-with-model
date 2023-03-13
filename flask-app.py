@@ -26,6 +26,8 @@ gen_global = load(
 @app.route("/flask-inference/", methods = ["POST"])
 def flask_inference_no_batching():
 
+	print("received POST request", flush=True)
+
 	global gen_global
 
 	req_data = flask.request.json
