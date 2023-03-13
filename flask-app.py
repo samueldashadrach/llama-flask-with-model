@@ -14,7 +14,7 @@ app = flask.Flask(__name__)
 local_rank, world_size = setup_model_parallel()
 if local_rank > 0:
     sys.stdout = open(os.devnull, "w")
-gen_global = example.load(
+gen_global = load(
     ckpt_dir = "~/llama-all/weights/7B",
     tokenizer_path = "~/llama-all/weights/tokenizer.model",
     local_rank = local_rank,
