@@ -26,6 +26,7 @@ gen_global = load(
 @app.route("/")
 def hello():
 	print("flask server is running", flush=True)
+	return "flask server is running"
 
 @app.route("/flask-inference/", methods = ["POST"])
 def flask_inference_no_batching():
