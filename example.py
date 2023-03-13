@@ -96,6 +96,8 @@ while True:
             result = gen_global.generate(
                 prompt, max_gen_len=256, temperature=0.8, top_p=0.95
             )
+            console.log(prompt)
+            console.log(result)
 
             # write to "result" file
             tempname = "".join(random.choices(string.ascii_uppercase, k=20))
